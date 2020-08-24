@@ -1,0 +1,28 @@
+// nondeterministic choice of next client
+impl Network {
+    forall f : [1 .. NUM_FILES] {
+        forall c : Client. c in self {
+            [c.genreq[f]]
+                self.is_idle() & // currently, there is no transfer in progress
+                self.has_file(f) & // the file exists within the network
+                may_request_file(self, c, f) // the last copy of another file will not be overwritten
+            -> true;
+        }
+    }
+}
+
+function Network.is_idle() : bool =
+    forall c : Client. c in self => c.loc = C_WAIT;
+
+
+function Network.has_file(file : int) : bool = self.num_copies(file) != 0;
+
+
+function Network.num_copies(file : int) : int =
+    sum s : Station. bool_to_int(s boundin self & s.has_file(file));
+
+
+function may_request_file(n : Network, c : Client, file : int) : bool =
+    if station_of(c).replaced_file() != NO_FILE & station_of(c).replaced_file() != file
+        then n.num_copies(station_of(c).replaced_file()) > 1
+        else true;

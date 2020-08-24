@@ -1,0 +1,31 @@
+type Client {
+    loc : enum { C_IDLE, C_SEND, C_RECV, C_STORE } init C_IDLE;
+    file : [NO_FILE .. NUM_FILES] init NO_FILE;
+
+
+    forall f : [1 .. NUM_FILES] {
+        // (0) generate request
+        [self.genreq[f]] loc = C_IDLE -> (loc' = C_SEND) & (file' = f);
+
+
+        forall link : [0 .. LAST_LINK]. self is_source_of link {
+            // (1) send request
+            [req(f, link)] loc = C_SEND & file = f -> (loc' = C_RECV);
+
+            // enable relaying of requests
+            [req(f, link)] !(loc = C_SEND & file = f) -> true;
+        }
+
+        forall link : [0 .. LAST_LINK]. self is_target_of link {
+            // (2) receive file
+            [data(f, link)] loc = C_RECV & file = f -> (loc' = C_STORE);
+
+            // enable relaying of data
+            [data(f, link)] !(loc = C_RECV & file = f) -> true;
+        }
+
+        // (3) store local file
+        [storage[index].store[f]] loc = C_STORE & file = f ->
+            (loc' = C_IDLE) & (file' = NO_FILE);
+    }
+}

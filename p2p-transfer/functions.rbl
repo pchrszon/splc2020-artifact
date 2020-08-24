@@ -1,0 +1,37 @@
+function to(source : int, target : int) : array 2 of int = [source, target];
+
+
+function source(link_id : int) : int = links[link_id][0];
+
+
+function target(link_id : int) : int = links[link_id][1];
+
+
+// Returns a 'req' action, where the request is sent over the given link.
+function req(file_id : int, link_id : int) : action =
+    action r[source(link_id)][target(link_id)][file_id];
+
+
+// Returns a 'data' action, where the data is sent over the given link.
+function data(file_id : int, link_id : int) : action =
+    action d[source(link_id)][target(link_id)][file_id];
+
+
+function station_of(r : {Server, Client}) : Station = player(player(r));
+
+
+// Get the core component that plays the given role.
+function core(c : component) : component =
+    if c : role
+        then core(player(c))
+        else c;
+
+
+function boundin(p : component, c : compartment) : bool =
+    exists r : role. r in c & r boundto p;
+
+
+function played(r : bool) : bool = r;
+
+
+function bool_to_int(b : bool) : int = if b then 1 else 0;

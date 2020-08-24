@@ -1,0 +1,7 @@
+impl Tool {
+    forall wp : Workpiece {
+        forall tt : [0 .. NUM_TOOL_TYPES - 1] {
+            [wp.process[index][tt]] true -> true;
+        }
+    }
+}

@@ -1,0 +1,135 @@
+// reconfiguration: each tool is present at least once
+coordinator {
+    // mapping of robot ID to tool type
+    tool_assign : array NUM_ROBOTS of [0 .. NUM_TOOL_TYPES - 1] init INIT_ASSIGN;
+
+    reconf_allowed : bool init true;
+
+    // prevent deadlock in case no progress can be made
+    [idle] no_reconf_possible() & forall c : [0 .. NUM_CELLS - 1]. !is_functioning(c) -> true;
+
+    // global reconfiguration
+    if global_reconf {
+        forall ta_id : [0 .. NUM_TOOL_ASSIGNS - 1]. IS_VALID_GLOBAL_ASSIGN[ta_id] {
+            [configure_all]
+                reconf_allowed &
+                (exists cell_id : [0 .. NUM_CELLS - 1]. !is_functioning(cell_id)) &
+                is_working_global_tool_assign(TOOL_ASSIGN[ta_id])
+            ->
+                (tool_assign' = TOOL_ASSIGN[ta_id]) & (reconf_allowed' = false);
+        }
+    }
+
+    // local reconfiguration
+    forall cell_id : [0 .. NUM_CELLS - 1] {
+        forall ta_id : [0 .. NUM_TOOL_ASSIGNS - 1]. IS_VALID_ASSIGN[cell_id][ta_id] {
+            [configure[cell_id]]
+                (if global_reconf then !global_reconf_possible() else true) &
+                reconf_allowed &
+                !is_functioning(cell_id) &
+                is_local_assign(cell_id, TOOL_ASSIGN[ta_id]) &
+                is_working_tool_assign(cell_id, TOOL_ASSIGN[ta_id])
+            ->
+                (tool_assign' = TOOL_ASSIGN[ta_id]) & (reconf_allowed' = false);
+        }
+    }
+
+    // force role playing according to tool assignment
+    forall r : [0 .. NUM_ROBOTS - 1] {
+        forall wp : Workpiece {
+            forall tt : [0 .. NUM_TOOL_TYPES - 1] {
+                [wp.process[r][tt]] [tool[r]] tool_assign[r] = tt -> (reconf_allowed' = true);
+                [wp.process[r][tt]] [!tool[r]] tool_assign[r] != tt -> true;
+            }
+        }
+    }
+}
+
+
+// Check if all workpiece contained in the given cell can be processed further
+// using the current configuration of the cell (also takes the tools' state into
+// account).
+function is_functioning(cell_id : int) : bool =
+    forall wp : Workpiece. wp.get_cell_id() = cell_id =>
+        forall tt : [0 .. NUM_TOOL_TYPES - 1]. wp.progress = tt =>
+            tool_type_available(cell_id, tt);
+
+
+// Check if a tool of the given type is available in a given production cell.
+function tool_type_available(cell_id : int, tool_type_id : int) : bool =
+    exists r : [0 .. NUM_ROBOTS - 1].
+        r is_in cell_id & tool_assign[r] = tool_type_id &
+        ts.state[r][tool_type_id] = WORKING;
+
+
+function no_reconf_possible() : bool =
+    !exists c : [0 .. NUM_CELLS - 1].
+        exists ta_id : [0 .. NUM_TOOL_ASSIGNS - 1].
+            IS_VALID_ASSIGN[c][ta_id] &
+            is_local_assign(c, TOOL_ASSIGN[ta_id]) &
+            is_working_tool_assign(c, TOOL_ASSIGN[ta_id]);
+
+
+function is_working_tool_assign(cell_id : int, ta : array NUM_ROBOTS of int) : bool =
+    forall r : [0 .. NUM_ROBOTS - 1].
+        r is_in cell_id => ts.state[r][ta[r]] = WORKING;
+
+
+// Check if the tool assignment only reassigns the tools in the given cell.
+function is_local_assign(cell_id : int, ta : array NUM_ROBOTS of int) : bool =
+    forall r : [0 .. NUM_ROBOTS - 1].
+        if r is_in cell_id
+            then true
+            else tool_assign[r] = ta[r];
+
+
+function global_reconf_possible() : bool =
+    exists ta_id : [0 .. NUM_TOOL_ASSIGNS - 1].
+        IS_VALID_GLOBAL_ASSIGN[ta_id] &
+        is_working_global_tool_assign(TOOL_ASSIGN[ta_id]);
+
+
+function is_working_global_tool_assign(ta : array NUM_ROBOTS of int) : bool =
+    forall r : [0 .. NUM_ROBOTS - 1].
+        ts.state[r][ta[r]] = WORKING;
+
+
+const INIT_ASSIGN = first_valid_assign(0);
+
+function first_valid_assign(i : int) : array NUM_ROBOTS of int =
+    if IS_VALID_GLOBAL_ASSIGN[i]
+        then TOOL_ASSIGN[i]
+        else first_valid_assign(i + 1);
+
+
+const IS_VALID_ASSIGN =
+    [ [ is_valid_tool_assign(cell_id, TOOL_ASSIGN[ta_id]) &
+        follows_routes(TOOL_ASSIGN[ta_id])
+    || ta_id : [0 .. NUM_TOOL_ASSIGNS - 1] ] || cell_id : [0 .. NUM_CELLS - 1] ];
+
+const IS_VALID_GLOBAL_ASSIGN =
+    [ forall c : [0 .. NUM_CELLS - 1]. IS_VALID_ASSIGN[c][ta_id]
+    || ta_id : [0 .. NUM_TOOL_ASSIGNS - 1] ];
+
+
+// A tool assignment is valid if each tool type is assigned at least once.
+function is_valid_tool_assign(cell_id : int, ta : array NUM_ROBOTS of int) : bool =
+    forall tt : [0 .. NUM_TOOL_TYPES - 1].
+        exists r : [0 .. NUM_ROBOTS - 1].
+            r is_in cell_id & ta[r] = tt;
+
+
+function follows_routes(ta : array NUM_ROBOTS of int) : bool =
+    forall src : [0 .. NUM_ROBOTS - 1], trg : [0 .. NUM_ROBOTS - 1].
+        ta[src] + 1 = ta[trg] => exists i : [0 .. length(routes) - 1].
+            routes[i][0] = src & routes[i][1] = trg;
+
+
+const NUM_TOOL_ASSIGNS : int = pow(NUM_TOOL_TYPES, NUM_ROBOTS);
+const TOOL_ASSIGN = [ to_tool_assign(ta_id) || ta_id : [0 .. NUM_TOOL_ASSIGNS - 1] ];
+
+// Convert a assignment ID to a tool assignment.
+function to_tool_assign(id : int) : array NUM_ROBOTS of int =
+    // interpret id as number in base NUM_TOOL_TYPES and assign its digits to robots
+    [  mod(floor(id / pow(NUM_TOOL_TYPES, (NUM_ROBOTS - i - 1))), NUM_TOOL_TYPES)
+    || i : [0 .. NUM_ROBOTS - 1] ];

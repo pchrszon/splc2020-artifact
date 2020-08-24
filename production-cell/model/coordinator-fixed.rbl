@@ -1,0 +1,19 @@
+// coordinator for a fixed tool assignment
+
+const TOOL_ASSIGN = [ i || i : [0 .. NUM_TOOL_TYPES - 1] ];
+
+coordinator {
+    tool_assign : array NUM_ROBOTS of [0 .. NUM_TOOL_TYPES - 1] init TOOL_ASSIGN; // mapping of robot index to tool
+
+    forall r : [0 .. NUM_ROBOTS - 1] {
+        forall wp : Workpiece {
+            forall t : [0 .. NUM_TOOL_TYPES - 1] {
+                [wp.process[t][r]] [tool[r]] tool_assign[r] = t -> true;
+                [wp.process[t][r]] [!tool[r]] tool_assign[r] != t -> true;
+            }
+
+            [wp.move[at(robot[r])]] [tool[r]] true -> true;
+            [wp.move[on(robot[r])]] [tool[r]] true -> true;
+        }
+    }
+}

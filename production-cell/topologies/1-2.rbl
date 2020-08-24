@@ -1,0 +1,8 @@
+const NUM_TOOL_TYPES = 2;
+
+const cell_defs = [
+        [0, CELL_0],
+        [1, CELL_0]
+    ];
+
+include "complete.rbl"

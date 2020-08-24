@@ -1,0 +1,10 @@
+// 3-chain topology
+
+const links_uni = [ 0 to 1, 1 to 2 ];
+include "bidirectional.rbl"
+
+const node_to_network = [0, 0, 0];
+const node_to_station = [0, 1, 2];
+
+const init_file = [1, 2, NO_FILE];
+const capacity : array NUM_STATIONS of int = 1;

@@ -1,0 +1,87 @@
+const PROGRESS_DONE = NUM_TOOL_TYPES;
+
+impl Workpiece {
+    // id of the next tool that must be applied
+    progress : [0 .. PROGRESS_DONE] init 0;
+
+    // position of the workpiece
+    pos : [POS_MIN .. POS_MAX] init POS_STORAGE_UNFINISHED;
+
+    // assignment of the workpiece to a cell
+    cell_id : [0 .. if fixed_cell_assign then 0 else NUM_CELLS - 1] init 0;
+
+
+    if fixed_cell_assign {
+        [self.move[POS_TRANSIT]] pos = POS_STORAGE_UNFINISHED -> (pos' = POS_TRANSIT);
+    }
+
+    if !fixed_cell_assign {
+        // move from storage to transit, nondeterministically select cell
+        forall c : [0 .. NUM_CELLS - 1] {
+            [self.move[POS_TRANSIT]] pos = POS_STORAGE_UNFINISHED -> (pos' = POS_TRANSIT) & (cell_id' = c);
+        }
+    }
+
+
+    // processing
+    forall r : [0 .. NUM_ROBOTS - 1] {
+        forall tt : [0 .. NUM_TOOL_TYPES - 1] {
+            [self.process[r][tt]] pos = on(r) & progress = tt -> (progress' = progress + 1);
+        }
+    }
+
+    forall r : [0 .. NUM_ROBOTS - 1] {
+        // move from transit to next robot
+        [self.move[on(r)]]
+            pos = POS_TRANSIT &
+            r is_in self.get_cell_id() &
+            tool_assign[r] = progress &
+            !occupied(r)
+            -> (pos' = on(r));
+
+        // move to transit
+        [self.move[POS_TRANSIT]] pos = on(r) & !(r can_process self) -> (pos' = POS_TRANSIT);
+    }
+
+    // move from transit to storage
+    [self.move[POS_STORAGE_FINISHED]] pos = POS_TRANSIT & progress = PROGRESS_DONE ->
+        (pos' = POS_STORAGE_FINISHED);
+
+    // reset and reuse
+    [] pos = POS_STORAGE_FINISHED -> (pos' = POS_STORAGE_UNFINISHED) & (cell_id' = 0) & (progress' = 0);
+}
+
+
+function Workpiece.get_cell_id() : int =
+     if fixed_cell_assign
+        then mod(index, NUM_CELLS)
+        else self.cell_id;
+
+function Workpiece.can_move() : bool =
+    self.pos = POS_STORAGE_UNFINISHED |
+    self.pos = POS_STORAGE_FINISHED |
+    (exists r : [0 .. NUM_ROBOTS - 1].
+        self.pos = on(r) &
+        !(r can_process self)) |
+    (self.progress = PROGRESS_DONE & self.pos = POS_TRANSIT) |
+    (self.pos = POS_TRANSIT & exists r : [0 .. NUM_ROBOTS - 1].
+        r is_in self.get_cell_id() &
+        r can_process self &
+        !occupied(r));
+
+function Workpiece.can_be_processed() : bool =
+    exists r : [0 .. NUM_ROBOTS - 1].
+        self.pos = on(r) &
+        r can_process self;
+
+function occupied(robot_id : int) : bool =
+    if fast_shared & is_shared(robot_id)
+        then false
+        else exists wp : Workpiece. wp.pos = on(robot_id);
+
+function is_shared(robot_id : int) : bool =
+    (sum i : [0 .. length(cell_defs) - 1]. if cell_defs[i][0] = robot_id then 1 else 0) > 1;
+
+function can_process(r : int, wp : Workpiece) : bool =
+    tool_assign[r] = wp.progress &
+    (sum tt : [0 .. NUM_TOOL_TYPES - 1]. if wp.progress = tt then ts.state[r][tt] else 0) = 1;

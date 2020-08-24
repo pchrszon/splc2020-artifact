@@ -1,0 +1,13 @@
+natural type StationFIFO1;
+natural type StationFIFO2;
+
+typedef Station = {StationFIFO1, StationFIFO2};
+
+role type Relay(StationFIFO1, StationFIFO2);
+role type Server(Relay);
+role type Client(Relay);
+
+compartment type Network(
+    Relay[0 .. NUM_NODES],
+    Server[0 .. NUM_NODES],
+    Client[0 .. NUM_NODES]);

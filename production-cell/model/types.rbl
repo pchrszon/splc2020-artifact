@@ -1,0 +1,4 @@
+natural type Robot;
+natural type Workpiece;
+
+role type Tool(Robot);

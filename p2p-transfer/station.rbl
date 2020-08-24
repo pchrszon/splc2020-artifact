@@ -1,0 +1,81 @@
+impl StationFIFO1(station_base, fifo_buffer(1));
+impl StationFIFO2(station_base, fifo_buffer(2));
+
+
+// Base behavior of a station: block all incoming and outgoing messages.
+module station_base {
+    forall f : [1 .. NUM_FILES] {
+        forall link : [0 .. LAST_LINK]. self is_source_of link {
+            // send request
+            [req(f, link)] false -> true;
+
+            // send data
+            [data(f, link)] false -> true;
+        }
+
+        forall link : [0 .. LAST_LINK]. self is_target_of link {
+            // receive request
+            [req(f, link)] false -> true;
+
+            // receive data
+            [data(f, link)] false -> true;
+        }
+    }
+}
+
+
+// A station stores its files in a FIFO buffer
+module fifo_buffer(size : int) {
+    // files are shifted from highest index to lowest index on store, i.e., the
+    // "oldest" file is at index 0
+    files : array size of [0 .. NUM_FILES] init
+        [ if i = size - 1 then init_file[self.get_index()] else 0 || i : [0 .. size - 1] ];
+
+    forall f : [1 .. NUM_FILES] {
+        [internal self.load[f]] self.has_file(f) -> true;
+
+        // if station already has the file, do nothing
+        [internal self.store[f]] self.has_file(f) -> true;
+
+        // store file and shift all other files in buffer
+        [internal self.store[f]] !self.has_file(f) ->
+            (files[size - 1]' = f) & forall i : [0 .. size - 2] {
+                (files[i]' = files[i + 1])
+            };
+    }
+}
+
+
+function is_source_of(s : Station, link_id : int) : bool =
+    relay[source(link_id)] boundto s;
+
+function is_target_of(s : Station, link_id : int) : bool =
+    relay[target(link_id)] boundto s;
+
+
+function StationFIFO1.has_file(f : int) : bool =
+    exists i : [0 .. length(self.files) - 1]. self.files[i] = f;
+
+function StationFIFO2.has_file(f : int) : bool =
+    exists i : [0 .. length(self.files) - 1]. self.files[i] = f;
+
+
+// Returns the file ID of the file that would be replaced if the station
+// received a new file.
+
+function StationFIFO1.replaced_file() : int = self.files[0];
+function StationFIFO2.replaced_file() : int = self.files[0];
+
+
+// Get the logical index of the station.
+
+function StationFIFO1.get_index() : int = find_nth(index, 1, 0);
+function StationFIFO2.get_index() : int = find_nth(index, 2, 0);
+
+function find_nth(n : int, cap : int, i : int) : int =
+    if capacity[i] = cap
+        then if n = 0
+            then i
+            else find_nth(n - 1, cap, i + 1)
+        else
+            find_nth(n, cap, i + 1);

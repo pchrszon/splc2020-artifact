@@ -1,0 +1,21 @@
+// star topology with s nodes and f files
+
+const SIZE : int;
+const FILES : int;
+
+const links_uni = [ 0 to i || i : [1 .. SIZE - 1] ];
+include "bidirectional.rbl"
+
+// all stations are bound to a single set of roles, all in the same network
+const node_to_network : array SIZE of int = 0;
+const node_to_station = [ i || i : [0 .. SIZE - 1] ];
+
+// one copy of each file is placed on the outer stations
+const init_file =
+    [ if i = 0
+        then NO_FILE
+        else max(NO_FILE, FILES - (i - 1))
+    || i : [0 .. SIZE - 1]
+    ];
+
+const capacity : array SIZE of int = 1;

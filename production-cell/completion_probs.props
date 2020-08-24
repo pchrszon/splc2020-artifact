@@ -1,0 +1,7 @@
+Pmin=? [ F "all_finished" ];
+
+Pmax=? [ F "all_finished" ];
+
+// R{"finished"}min=? [ F "terminally_broken" ];
+
+// R{"finished"}max=? [ F "terminally_broken" ];

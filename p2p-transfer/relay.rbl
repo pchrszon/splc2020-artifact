@@ -1,0 +1,49 @@
+impl Relay {
+    loc : enum { R_IDLE, R_REQ, R_DATA } init R_IDLE;
+    file : [0 .. NUM_FILES] init 0;
+    from : [0 .. NUM_NODES - 1] init 0;
+
+    forall f : [1 .. NUM_FILES] {
+        forall link : [0 .. LAST_LINK]. self.is_target_of(link) {
+            // (1a) receive request
+            [override req(f, link)] loc = R_IDLE ->
+                (loc' = R_REQ) & (file' = f) & (from' = source(link));
+
+            // (1b) receive data
+            [override data(f, link)] loc = R_IDLE ->
+                (loc' = R_DATA) & (file' = f) & (from' = source(link));
+        }
+
+        forall link : [0 .. LAST_LINK]. self.is_source_of(link) {
+            // (2a) resend request
+            [override req(f, link)]
+                loc = R_REQ &
+                file = f &
+                if is_terminating(self) // if there is only one link ...
+                    then true           // ... then always send the message back over that link
+                    else target(link) != from ->
+                (loc' = R_IDLE) & (file' = 0) & (from' = 0);
+
+            // (2b) resend data
+            [override data(f, link)]
+                loc = R_DATA &
+                file = f &
+                if is_terminating(self)
+                    then true
+                    else target(link) != from ->
+                (loc' = R_IDLE) & (file' = 0) & (from' = 0);
+        }
+    }
+}
+
+function Relay.is_source_of(link_id : int) : bool = index = source(link_id);
+
+function Relay.is_target_of(link_id : int) : bool = index = target(link_id);
+
+
+// Returns 'true' if the given network node has less than 2 outgoing links.
+function is_terminating(r : Relay) : bool = num_outgoing(index(r)) <= 1;
+
+function num_outgoing(id : int) : int =
+    sum link : [0 .. LAST_LINK].
+        if source(link) = id then 1 else 0;

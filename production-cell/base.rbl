@@ -1,0 +1,22 @@
+// true: fixed assignment of workpieces to production cells
+// false: nondeterministic choice of production cell for each new workpiece
+const fixed_cell_assign = true;
+
+// allows a (shared) robot to process multiple workpieces in a single processing phase
+const fast_shared = true;
+
+
+include "model/types.rbl"
+
+include "model/workpiece.rbl"
+include "model/tool.rbl"
+
+include "model/system.rbl"
+
+include "model/constants.rbl"
+include "model/functions.rbl"
+include "model/positions.rbl"
+
+include "model/coordinator.rbl"
+
+include "model/failure.rbl"

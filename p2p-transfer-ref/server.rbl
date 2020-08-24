@@ -1,0 +1,27 @@
+type Server {
+    loc : enum { S_IDLE, S_LOAD, S_SEND } init S_IDLE;
+    file : [NO_FILE .. NUM_FILES] init NO_FILE;
+
+
+    forall f : [1 .. NUM_FILES] {
+        forall link : [0 .. LAST_LINK]. self is_target_of link {
+            // (1) receive request
+            [req(f, link)] loc = S_IDLE & self has_file f ->
+                (loc' = S_LOAD) & (file' = f);
+
+            // enable relay for other requests
+            [req(f, link)] !(self has_file f) -> true;
+        }
+
+        [storage[index].load[f]] loc = S_LOAD & file = f -> (loc' = S_SEND);
+
+        forall link : [0 .. LAST_LINK]. self is_source_of link {
+            // (3) send data back
+            [data(f, link)] loc = S_SEND & file = f ->
+                (loc' = S_IDLE) & (file' = NO_FILE);
+
+            // enable relay for other data
+            [data(f, link)] !(loc = S_SEND & file = f) -> true;
+        }
+    }
+}

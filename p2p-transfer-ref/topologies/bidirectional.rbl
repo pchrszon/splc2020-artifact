@@ -1,0 +1,6 @@
+// construct bidirectional links from links_uni
+const links =
+    [ if i < length(links_uni)
+        then links_uni[i][0] to links_uni[i][1]
+        else links_uni[i - length(links_uni)][1] to links_uni[i - length(links_uni)][0]
+    || i : [0 .. 2 * length(links_uni) - 1] ];

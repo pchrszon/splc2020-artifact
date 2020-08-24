@@ -1,0 +1,2 @@
+// every possible route
+const routes = [ floor(i / NUM_ROBOTS) to mod(i, NUM_ROBOTS) || i : [0 .. NUM_ROBOTS * NUM_ROBOTS - 1] ];

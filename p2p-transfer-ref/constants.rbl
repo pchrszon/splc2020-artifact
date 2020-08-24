@@ -1,0 +1,17 @@
+const NO_FILE = 0;
+
+const LAST_LINK = length(links) - 1;
+
+const NUM_STATIONS = max_station_id(0, 0) + 1;
+const NUM_FILES = max_file_id(0, 0);
+
+
+function max_station_id(i : int, max_id : int) : int =
+    if i >= length(links)
+        then max_id
+        else max_station_id(i + 1, max(max(source(i), target(i)), max_id));
+
+function max_file_id(i : int, max_id : int) : int =
+    if i >= length(init_file)
+        then max_id
+        else max_file_id(i + 1, max(init_file[i], max_id));

@@ -1,0 +1,8 @@
+// there are no deadlocks
+! E [ F "deadlock" ];
+
+// at least one workpiece was finished
+E [ F "one_finished" ];
+
+// all workpieces were finished
+E [ F "all_finished" ];

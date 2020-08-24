@@ -1,0 +1,21 @@
+type Network {
+    forall f : [1 .. NUM_FILES] {
+        forall c : Client {
+            [c.genreq[f]]
+                is_idle() &
+                file_exists(f) &
+                station[index(c)] may_request_file f
+            -> true;
+        }
+    }
+}
+
+function is_idle() : bool = forall c : Client. c.loc = C_IDLE;
+
+function file_exists(f : int) : bool = exists s : Station. s has_file f;
+
+function num_copies(f : int) : int =
+    sum s : Station. bool_to_int(s has_file f);
+
+function may_request_file(s : Station, f : int) : bool =
+    storage[index(s)].file != NO_FILE & storage[index(s)].file != f => num_copies(storage[index(s)].file) > 1;

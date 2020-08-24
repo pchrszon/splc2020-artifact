@@ -1,0 +1,9 @@
+// Model for determining resiliency, adaptive-ring variant
+
+const global_reconf = false;
+const num_workpieces = 1;
+const p_fail : double = 0.01;
+
+include "base.rbl"
+include "model/counter.rbl"
+include "topologies/1-3.rbl"

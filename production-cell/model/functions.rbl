@@ -1,0 +1,10 @@
+// Check if the robot is contained within the given cell.
+function is_in(robot_id : int, cell_id : int) : bool =
+    exists i : [0 .. length(cell_defs) - 1].
+        cell_defs[i][0] = robot_id & cell_defs[i][1] = cell_id;
+
+
+function played(r : bool) : bool = r;
+
+
+function to(src_id : int, trg_id : int) : array 2 of int = [src_id, trg_id];

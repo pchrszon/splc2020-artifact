@@ -1,0 +1,23 @@
+type TimeCounter {
+    t : [0 .. max_time] init 0;
+
+    [idle] t < max_time -> (t' = t + 1);
+
+    forall c : [0 .. NUM_CELLS - 1] {
+        [configure[c]] t < max_time -> (t' = t + 1);
+    }
+
+    if global_reconf {
+        [configure_all] t < max_time -> (t' = t + 1);
+    }
+
+    [processed] t < max_time -> (t' = t + 1);
+
+    [] t = max_time -> true;
+}
+
+label "eot" = time.t = max_time;
+
+system {
+    time : TimeCounter;
+}

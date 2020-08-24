@@ -1,0 +1,19 @@
+include "topologies/s-f-star.rbl"
+
+include "monitor.rbl"
+
+include "system.rbl"
+
+include "station.rbl"
+include "server.rbl"
+include "client.rbl"
+include "network.rbl"
+
+include "constants.rbl"
+include "functions.rbl"
+
+
+label "some_got_file_1" =
+    exists s : Station. init_file[index(s)] != 1 & s has_file 1;
+
+label "station_0_got_file_1" = station[0] has_file 1;

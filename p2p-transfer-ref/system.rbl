@@ -1,0 +1,8 @@
+system {
+    station[NUM_STATIONS] : Station;
+    storage[NUM_STATIONS] : Storage;
+    server[NUM_STATIONS] : Server;
+    client[NUM_STATIONS] : Client;
+
+    network : Network;
+}

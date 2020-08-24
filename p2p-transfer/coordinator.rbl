@@ -1,0 +1,38 @@
+coordinator {
+    // only allow playing the Server role if the Station has the file
+    forall f : [1 .. NUM_FILES] {
+        forall srv : Server {
+            forall link : [0 .. LAST_LINK] {
+                if srv.is_target_of(link) {
+                    [req(f, link)] [ srv ] station_of(srv).has_file(f) -> true;
+                    [req(f, link)] [ !srv ] !station_of(srv).has_file(f) -> true;
+                }
+
+                if srv.is_source_of(link) {
+                    [data(f, link)] [ true over [srv] ] true -> true;
+                }
+            }
+
+            [station_of(srv).load[f]] [ srv ] true -> true;
+        }
+    }
+
+    // if client role can receive data, force client role
+    forall f : [1 .. NUM_FILES] {
+        forall c : Client {
+            forall link : [0 .. LAST_LINK] {
+                if c.is_target_of(link) {
+                    [data(f, link)] [ c ] c.loc != C_WAIT -> true;
+                    [data(f, link)] [ true over [c] ] c.loc = C_WAIT -> true;
+                }
+
+                if c.is_source_of(link) {
+                    [req(f, link)] [ true over [c] ] true -> true;
+                }
+            }
+
+            [station_of(c).store[f]] [ c ] true -> true;
+            [c.genreq[f]] [ c ] true -> true;
+        }
+    }
+}

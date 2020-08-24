@@ -1,0 +1,31 @@
+system {
+    // station[NUM_STATIONS] : StationFIFO1;
+    station_1[NUM_FIFO1] : StationFIFO1;
+    station_2[NUM_FIFO2] : StationFIFO2;
+
+    relay[NUM_NODES] : Relay;
+    server[NUM_NODES] : Server;
+    client[NUM_NODES] : Client;
+
+    network[NUM_NETWORKS] : Network;
+
+    forall i : [0 .. NUM_NODES - 1].
+        relay[i] boundto station(node_to_station[i]) &
+        server[i] boundto relay[i] &
+        client[i] boundto relay[i];
+
+    forall i : [0 .. NUM_NODES - 1].
+        relay[i] in network[node_to_network[i]] &
+        server[i] in network[node_to_network[i]] &
+        client[i] in network[node_to_network[i]];
+}
+
+
+function station(id : int) : Station =
+    if capacity[id] = 1
+        then station_1[count_before(id, 1)]
+        else station_2[count_before(id, 2)];
+
+
+function count_before(i : int, c : int) : int =
+    sum k : [0 .. i - 1]. bool_to_int(capacity[k] = c);

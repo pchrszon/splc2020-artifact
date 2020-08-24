@@ -1,0 +1,21 @@
+enum {
+    BROKEN,
+    WORKING
+}
+
+type Tools {
+    state : array NUM_ROBOTS of array NUM_TOOL_TYPES of [BROKEN .. WORKING] init
+        [ [ WORKING || i : [0 .. NUM_TOOL_TYPES - 1] ] || k : [0 .. NUM_ROBOTS - 1] ];
+
+    forall r : [0 .. NUM_ROBOTS - 1] {
+        forall wp : Workpiece {
+            forall tt : [0 .. NUM_TOOL_TYPES - 1] {
+                [wp.process[r][tt]] state[r][tt] = WORKING ->
+                    p_fail: (state[r][tt]' = BROKEN) +
+                    (1 - p_fail): true;
+
+                [wp.move[on(r)]] wp.progress = tt & state[r][tt] = WORKING -> true;
+            }
+        }
+    }
+}

@@ -1,0 +1,37 @@
+impl Client {
+    loc : enum { C_WAIT, C_SEND, C_RECV, C_STORE } init C_WAIT;
+    file : [0 .. NUM_FILES] init 0;
+
+    forall f : [1 .. NUM_FILES] {
+        // (0) generate request
+        [self.genreq[f]] loc = C_WAIT -> (loc' = C_SEND) & (file' = f);
+
+
+        forall link : [0 .. LAST_LINK]. self.is_source_of(link) {
+            // (1) send request
+            [override req(f, link)] loc = C_SEND & file = f ->
+                (loc' = C_RECV);
+        }
+
+        forall link : [0 .. LAST_LINK]. self.is_target_of(link) {
+            // (2) receive file
+            [override data(f, link)] loc = C_RECV & file = f ->
+                (loc' = C_STORE);
+        }
+
+        // (3) store local file
+        [core(self).store[f]] loc = C_STORE & file = f ->
+            (loc' = C_WAIT) & (file' = 0);
+
+        // allow other Clients bound to the same Station to store files
+        forall c : Client. c != self & core(self) = core(c) {
+            [core(c).store[f]] !(loc = C_STORE & file = f) & c.loc = C_STORE & c.file = f -> true;
+        }
+    }
+}
+
+function Client.is_source_of(link_id : int) : bool =
+    index(player) = source(link_id);
+
+function Client.is_target_of(link_id : int) : bool =
+    index(player) = target(link_id);

@@ -1,0 +1,17 @@
+// counter for finished workpieces
+
+const MAX_FINISHED : int;
+
+type Counter {
+    finished : [0 .. MAX_FINISHED];
+
+    forall wp : Workpiece {
+        [wp.move[POS_STORAGE_FINISHED]] true -> (finished' = min(finished + 1, MAX_FINISHED));
+    }
+}
+
+system {
+    c : Counter;
+}
+
+label "all_finished" = c.finished = MAX_FINISHED;

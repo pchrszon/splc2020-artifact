@@ -1,0 +1,6 @@
+// construct bidirectional routes from unidirectional definition
+const routes =
+    [ if i < length(routes_uni)
+        then routes_uni[i][0] to routes_uni[i][1]
+        else routes_uni[i - length(routes_uni)][1] to routes_uni[i - length(routes_uni)][0]
+    || i : [0 .. 2 * length(routes_uni) - 1] ];

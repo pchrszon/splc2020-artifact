@@ -1,0 +1,11 @@
+system {
+    robot[NUM_ROBOTS] : Robot;
+    wp[num_workpieces] : Workpiece;
+
+    tool[NUM_ROBOTS] : Tool;
+
+    forall i : [0 .. NUM_ROBOTS - 1].
+        tool[i] boundto robot[i];
+
+    ts : Tools; // error model
+}

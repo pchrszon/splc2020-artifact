@@ -1,0 +1,32 @@
+const NO_FILE = 0;
+
+const LAST_LINK = length(links) - 1;
+
+const NUM_STATIONS = max_station_id(0, 0) + 1;
+const NUM_NODES = max_node_id(0, 0) + 1;
+const NUM_NETWORKS = max_net_id(0, 0) + 1;
+const NUM_FILES = max_file_id(0, 0);
+
+const NUM_FIFO1 = sum i : [0 .. NUM_STATIONS - 1]. bool_to_int(capacity[i] = 1);
+const NUM_FIFO2 = sum i : [0 .. NUM_STATIONS - 1]. bool_to_int(capacity[i] = 2);
+
+
+function max_station_id(i : int, max_id : int) : int =
+    if i >= length(node_to_station)
+        then max_id
+        else max_station_id(i + 1, max(node_to_station[i], max_id));
+
+function max_node_id(i : int, max_id : int) : int =
+    if i >= length(links)
+        then max_id
+        else max_node_id(i + 1, max(max(source(i), target(i)), max_id));
+
+function max_net_id(i : int, max_id : int) : int =
+    if i >= length(node_to_network)
+        then max_id
+        else max_net_id(i + 1, max(node_to_network[i], max_id));
+
+function max_file_id(i : int, max_id : int) : int =
+    if i >= length(init_file)
+        then max_id
+        else max_file_id(i + 1, max(init_file[i], max_id));

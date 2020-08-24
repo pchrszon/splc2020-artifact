@@ -1,0 +1,9 @@
+const POS_STORAGE_UNFINISHED = -3;
+const POS_STORAGE_FINISHED = -2;
+const POS_TRANSIT = -1;
+
+// position where processing of a workpiece is done by a robot
+function on(robot_id : int) : int = robot_id;
+
+const POS_MIN = -3;
+const POS_MAX = NUM_ROBOTS - 1;

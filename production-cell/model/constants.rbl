@@ -1,0 +1,12 @@
+// names for cells to make topologies more readable
+const CELL_0 = 0;
+const CELL_1 = 1;
+
+
+const NUM_ROBOTS = get_max_id(0, 0, 0) + 1;
+const NUM_CELLS = get_max_id(1, 0, 0) + 1;
+
+function get_max_id(ent : int, i : int, max_id : int) : int =
+    if i >= length(cell_defs)
+        then max_id
+        else get_max_id(ent, i + 1, max(max_id, cell_defs[i][ent]));

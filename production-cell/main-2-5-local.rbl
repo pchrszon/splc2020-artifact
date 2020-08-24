@@ -1,0 +1,19 @@
+// Model for computing throughput
+
+const max_time = 10;
+const global_reconf = false;
+const num_workpieces = 2;
+const p_fail = 0.1;
+
+include "base.rbl"
+include "model/time.rbl"
+include "model/phase.rbl"
+
+include "topologies/2-5.rbl"
+
+
+rewards "finished" {
+    forall wp : Workpiece {
+        [wp.move[POS_STORAGE_FINISHED]] true := 1;
+    }
+}

@@ -1,0 +1,80 @@
+type Station {
+    loc : enum { IDLE, R_REQ, R_DATA } init IDLE;
+
+    // temporary file buffer
+    file_buf : [NO_FILE .. NUM_FILES] init NO_FILE;
+
+    from : [0 .. NUM_STATIONS - 1] init 0;
+
+
+    // message relaying
+    forall f : [1 .. NUM_FILES] {
+        forall link : [0 .. LAST_LINK]. self is_target_of link {
+            // (1a) receive request
+            [req(f, link)] loc = IDLE & !(self has_file f) ->
+                (loc' = R_REQ) & (file_buf' = f) & (from' = source(link));
+
+            // enable server action
+            [req(f, link)] self has_file f -> true;
+
+            // (1b) receive data
+            [data(f, link)] loc = IDLE & client[index].loc != C_RECV ->
+                (loc' = R_DATA) & (file_buf' = f) & (from' = source(link));
+
+            [data(f, link)] client[index].loc = C_RECV & client[index].file = f -> true;
+        }
+
+        forall link : [0 .. LAST_LINK]. self is_source_of link {
+            // (2a) resend request
+            [req(f, link)]
+                loc = R_REQ &
+                file_buf = f &
+                if is_terminating(self) // if there is only one link ...
+                    then true           // ... then always send the message back over that link
+                    else target(link) != from ->
+                (loc' = IDLE) & (file_buf' = 0) & (from' = 0);
+
+            [req(f, link)] client[index].loc = C_SEND & client[index].file = f -> true;
+
+            // (2b) resend data
+            [data(f, link)]
+                loc = R_DATA &
+                file_buf = f &
+                if is_terminating(self)
+                    then true
+                    else target(link) != from ->
+                (loc' = IDLE) & (file_buf' = 0) & (from' = 0);
+
+            [data(f, link)] server[index].loc = S_SEND & server[index].file = f -> true;
+        }
+    }
+}
+
+
+type Storage {
+    file : [NO_FILE .. NUM_FILES] init init_file[index];
+
+
+    forall f : [1 .. NUM_FILES] {
+        [self.load[f]] file = f -> true;
+        [self.store[f]] true -> (file' = f);
+    }
+}
+
+
+typedef Node = {Station, Client, Server};
+
+
+function has_file(node : Node, f : int) : bool = storage[index(node)].file = f;
+
+function is_source_of(node : Node, link_id : int) : bool = index(node) = source(link_id);
+
+function is_target_of(node : Node, link_id : int) : bool = index(node) = target(link_id);
+
+
+// Returns 'true' if the given network node has less than 2 outgoing links.
+function is_terminating(s : Station) : bool = num_outgoing(index(s)) <= 1;
+
+function num_outgoing(id : int) : int =
+    sum link : [0 .. LAST_LINK].
+        if source(link) = id then 1 else 0;

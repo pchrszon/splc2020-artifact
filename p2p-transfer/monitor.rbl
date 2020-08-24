@@ -1,0 +1,24 @@
+// This module monitors whether a given station has ever gotten a specific file.
+type Monitor {
+    got_file : array NUM_STATIONS of array NUM_FILES of bool init
+        [ [ init_file[s] = f || f : [1 .. NUM_FILES] ]
+        || s : [0 .. NUM_STATIONS - 1]
+        ];
+
+    forall f : [1 .. NUM_FILES] {
+        forall s : Station {
+            [s.store[f]] true -> (got_file[s.get_index()][f - 1]' = true);
+        }
+    }
+}
+
+
+system {
+    mon : Monitor;
+}
+
+
+label "all_got_all_files" =
+    forall s : [0 .. NUM_STATIONS - 1].
+        forall f : [0 .. NUM_FILES - 1].
+            mon.got_file[s][f];

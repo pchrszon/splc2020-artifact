@@ -1,0 +1,29 @@
+type PhaseController {
+    phase : enum { MOVING, PROCESSING } init MOVING;
+
+
+    [moved]
+        phase = MOVING &
+        (forall wp : Workpiece. !wp.can_move()) &
+        (exists wp : Workpiece. wp.can_be_processed())
+        -> (phase' = PROCESSING);
+    [processed] phase = PROCESSING & forall wp : Workpiece. !wp.can_be_processed() -> (phase' = MOVING);
+
+
+    forall wp : Workpiece {
+        [wp.move[POS_TRANSIT]] phase = MOVING -> true;
+    }
+
+
+    forall r : [0 .. NUM_ROBOTS - 1] {
+        forall wp : Workpiece {
+            forall tt : [0 .. NUM_TOOL_TYPES - 1] {
+                [wp.process[r][tt]] phase = PROCESSING -> true;
+            }
+        }
+    }
+}
+
+system {
+    pc : PhaseController;
+}

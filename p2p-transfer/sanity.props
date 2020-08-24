@@ -1,0 +1,25 @@
+// can we run into a deadlock?
+! E [ F "deadlock" ];
+
+// can some station (that didn't initially have the file) get the file?
+E [ F "some_got_file_1" ];
+
+// can we run into a situation where one station is never able to get the file?
+// E [ F (A [ G (!"some_got_file_1") ]) ];
+
+// A [ G (E [ F "station_0_got_file_1" ]) ];
+
+// is it always possible that some station gets the file
+A [ G (E [ F "some_got_file_1" ]) ];
+
+// can each station get each file at least once?
+// E [ F "all_got_all_files" ];
+
+// every file request will be eventually granted
+// A [ G ("client_req" => A [ F ("client_recv") ] ];
+// A [ G ((client_0_loc = 1) => A [ F (client_0_loc = 3) ]) ];
+// A [ G ((client_1_loc = 1) => A [ F (client_1_loc = 3) ]) ];
+// A [ G ((client_2_loc = 1) => A [ F (client_2_loc = 3) ]) ];
+// A [ G ((client_3_loc = 1) => A [ F (client_3_loc = 3) ]) ];
+
+P>=1 [ G ((client_0_loc = 1) => P>=1 [ F (client_0_loc = 3) ]) ];

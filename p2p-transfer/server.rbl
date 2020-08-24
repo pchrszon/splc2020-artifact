@@ -1,0 +1,32 @@
+impl Server {
+    loc : enum { S_IDLE, S_LOAD, S_SEND } init S_IDLE;
+    file : [0 .. NUM_FILES] init 0;
+
+    forall f : [1 .. NUM_FILES] {
+        forall link : [0 .. LAST_LINK]. self.is_target_of(link) {
+            // (1) receive request
+            [override req(f, link)] loc = S_IDLE ->
+                (loc' = S_LOAD) & (file' = f);
+        }
+
+        forall link : [0 .. LAST_LINK]. self.is_source_of(link) {
+            // (3) send data back
+            [override data(f, link)] loc = S_SEND & file = f ->
+                (loc' = S_IDLE) & (file' = 0);
+        }
+
+        // (2) load local file
+        [core(self).load[f]] loc = S_LOAD & file = f -> (loc' = S_SEND);
+
+        // allow other Servers bound to the same Station to load files
+        forall s : Server. s != self & core(self) = core(s) {
+            [core(s).load[f]] !(loc = S_LOAD & file = f) & s.loc = S_LOAD & s.file = f -> true;
+        }
+    }
+}
+
+function Server.is_source_of(link_id : int) : bool =
+    index(player) = source(link_id);
+
+function Server.is_target_of(link_id : int) : bool =
+    index(player) = target(link_id);
