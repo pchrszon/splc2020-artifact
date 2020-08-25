@@ -18,7 +18,7 @@ Running the experiments requires the following tools to be installed.
 * The verification and analysis of the resulting models is carried out using
   [PRISM](http://www.prismmodelchecker.org) (see also
   [PRISM on Github](https://github.com/prismmodelchecker/prism)).
-* *(optional)* For running the analysis on models with multi-actions, an
+* **(optional)** For running the analysis on models with multi-actions, an
   [extended version of PRISM](https://wwwtcs.inf.tu-dresden.de/ALGI/PUB/FA18/)
   is required (the archive contains further installation instructions).
 
@@ -30,12 +30,12 @@ the `PATH`. However, you may also explicitly specify the paths to the `rbsc` and
 lines of each script.
 
 
-## Running the Experiments
+## Running the experiments
 
 In the following, the scripts for running the experiments are explained in
 detail.
 
-### Peer-to-peer File Transfer
+### Peer-to-peer file transfer
 
 The role-based version of this family of models is contained in the
 `p2p-transfer` directory.
@@ -89,7 +89,7 @@ arguments to the `build.sh` script, e.g.:
 This will instantiate three models in the `build/bench` directory:
 
 - 2 stations, 1 file
-- 3 stations, 1 files
+- 3 stations, 1 file
 - 3 stations, 2 files
 
 Subsequently, the generated PRISM models can be checked using the `bench.sh`
@@ -123,12 +123,12 @@ a reference model using no role-specific constructs is provided in the
 scripts are invoked in the same way as for the role-based model.
 
 
-### Self-adaptive Production Cell
+### Self-adaptive production cell
 
 The model for the self-adaptive production cell is contained in the
 `production-cell` directory.
 
-**Quantitative Analysis: Impact of Adaptivity on Resilience.** The first
+**Quantitative analysis: impact of adaptivity on resilience.** The first
 experiment compares the resiliency, i.e., the probability that the system
 successfully produces *n* workpieces, for varying degrees of adaptability. Here,
 we consider a production cell comprising three robots. The *fixed* variant
@@ -152,7 +152,7 @@ The results are written to the file `<variant>.dat`, where the second column
 states the probability of successfully processing the number of workpieces in
 the first column.
 
-**Quantitative Analysis: Throughput.** The second experiment compares the
+**Quantitative analysis: throughput.** The second experiment compares the
 throughput of different cell configurations and adaptation strategies. In
 particular, the following variants are analyzed:
 
