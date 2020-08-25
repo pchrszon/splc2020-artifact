@@ -1,10 +1,12 @@
-Analysis of Role-based Models
-=============================
+From Features to Roles: Artifacts
+=================================
 
-This repository contains two models for illustrating the role-based modeling
-approach and a subsequent (quantitative) analysis. The first example is a
-peer-to-peer file transfer protocol (`p2p-transfer`) and the second example
-concerns an automated self-adaptive production cell (`production-cell`).
+This repository contains the artifacts for the SPLC 2020 submission "From
+Features to Roles".
+
+The first example model is a peer-to-peer file transfer protocol
+(`p2p-transfer`) and the second example concerns an automated self-adaptive
+production cell (`production-cell`).
 
 
 ## Prerequisites
