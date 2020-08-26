@@ -1,12 +1,22 @@
 From Features to Roles: Artifacts
 =================================
 
-This repository contains the artifacts for the SPLC 2020 submission "From
-Features to Roles".
+This repository contains the two example models discussed in the SPLC'20
+submission "From Features to Roles". These examples aim to illustrate the use of
+the role-based automata (RBA) framework and its
+[implementation](https://github.com/pchrszon/rbsc) for detecting hierarchical
+interactions between feature-oriented systems and for detecting active
+interplays. Furthermore, the first example also serves for demonstrating the
+scalability of the proposed modeling and analysis approach.
 
 The first example model is a peer-to-peer file transfer protocol
 (`p2p-transfer`) and the second example concerns an automated self-adaptive
-production cell (`production-cell`).
+production cell (`production-cell`). The entry points for these models are
+contained in the `main-*.rbl` files. For a quantitative analysis, these
+role-based models are first translated into the input language of the
+probabilistic model checker PRISM using our implementation. PRISM is
+subsequently invoked to carry out the analysis. This repository contains scripts
+for replicating the results presented in the SLPC'20 submission.
 
 
 ## Prerequisites
@@ -28,6 +38,10 @@ extended version of PRISM as well, it should be made available as `prism-ma` on
 the `PATH`. However, you may also explicitly specify the paths to the `rbsc` and
 `prism` binaries by setting the `RBSC` and `PRISM` variables in the first few
 lines of each script.
+
+In case you built `rbsc` from source, the `stack install` command will copy the
+binary to `~/.local/bin`. The command `export PATH=$HOME/.local/bin:$PATH` will
+temporarily add this directory to your `PATH`.
 
 
 ## Running the experiments
