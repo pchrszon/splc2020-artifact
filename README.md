@@ -27,7 +27,7 @@ documentation (in the `examples` directory).
 Running the experiments requires the following tools to be installed.
 
 * Translation of the role-based models into PRISM models requires the
-  `rbsc` tool which is required in the
+  `rbsc` tool which is provided in the
   [rbsc repository](https://github.com/pchrszon/rbsc).
 * The verification and analysis of the resulting models is carried out using
   [PRISM](http://www.prismmodelchecker.org) (see also
