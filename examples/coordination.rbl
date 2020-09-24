@@ -1,0 +1,26 @@
+natural type N {
+    s : [0..2] init 0;
+
+    [act] s < 2 -> (s' = s + 1);
+}
+
+role type R(N) {
+    t : [0..1] init 0;
+
+    [act] t = 0 -> (t' = 1);
+}
+
+system {
+    n : N;
+    a : R; a boundto n;
+    b : R; b boundto n;
+}
+
+coordinator {
+    played_a : bool init false;
+
+    [] [a  & !b] true     -> (played_a' = true);
+    [] [!a & !b] true     -> true;
+    [] [a & b]   played_a -> true;
+    [] [!a & b]  played_a -> true;
+}

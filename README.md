@@ -18,13 +18,17 @@ probabilistic model checker PRISM using our implementation. PRISM is
 subsequently invoked to carry out the analysis. This repository contains scripts
 for replicating the results presented in the SLPC'20 submission.
 
+The repository further contains the two running examples discussed in the `rbsc`
+documentation (in the `examples` directory).
+
 
 ## Prerequisites
 
 Running the experiments requires the following tools to be installed.
 
 * Translation of the role-based models into PRISM models requires the
-  [rbsc tool](https://github.com/pchrszon/rbsc).
+  `rbsc` tool which is required in the
+  [rbsc repository](https://github.com/pchrszon/rbsc).
 * The verification and analysis of the resulting models is carried out using
   [PRISM](http://www.prismmodelchecker.org) (see also
   [PRISM on Github](https://github.com/prismmodelchecker/prism)).
@@ -42,6 +46,31 @@ lines of each script.
 In case you built `rbsc` from source, the `stack install` command will copy the
 binary to `~/.local/bin`. The command `export PATH=$HOME/.local/bin:$PATH` will
 temporarily add this directory to your `PATH`.
+
+
+## Checking the installation
+
+An easy way to test whether the installation of all required tools was
+successful is to translate and simulate the example models provided in the
+`examples` directory.
+
+The first example, `producer-consumer.rbl`, is a simple producer-consumer model
+which demonstrates the basic syntax of the modeling language and its
+metaprogramming constructs. The second example, `coordination.rbl`, illustrates
+how role playing can be coordinated using the `coordinator` component.
+
+Translation of these models can be achieved using the commands:
+
+    cd examples/
+    rbsc producer-consumer.rbl -o producer-consumer.prism
+    rbsc coordination.rbl -o coordination.prism
+
+The behavior of the resulting PRISM models can be explored using the simulator
+of PRISM. For that, first start the PRISM GUI using, e.g.:
+
+    xprism producer-consumer.rbl
+
+From the menu, select "Simulator / New Path".
 
 
 ## Running the experiments
@@ -65,7 +94,7 @@ ring (via bidirectional connections). For instance, checking the functional
 correctness of a network with ring topology, 3 stations, and 2 files can be
 achieved using:
 
-    ./check-single.sh ring 3 2
+    ./check-single.sh star 3 2
 
 The script first instantiates the role-based model, translates it into a PRISM
 model, and finally invokes PRISM for checking the functional properties.

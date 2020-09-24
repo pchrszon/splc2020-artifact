@@ -1,0 +1,49 @@
+const BUFFER_SIZE = 2;
+const MAX_WORK_SIZE = 2;
+
+
+type Consumer {
+    work : [0 .. 2] init 0;
+
+    forall s : [1 .. MAX_WORK_SIZE] {
+        [self.dequeue[s]] work = 0 -> (work' = s);
+    }
+
+    [self.working] work > 0 -> (work' = work - 1);
+}
+
+
+type Buffer {
+    cell : array BUFFER_SIZE of [0 .. MAX_WORK_SIZE] init 0;
+
+    forall s : [1 .. MAX_WORK_SIZE] {
+        forall c : [0 .. BUFFER_SIZE - 1] {
+            [enqueue[s]] (forall i : [0 .. c - 1]. cell[i] > 0) & cell[c] = 0 -> (cell[c]' = s);
+        }
+
+        forall c : Consumer {
+            [c.dequeue[s]] cell[0] > 0 ->
+                forall i : [0 .. BUFFER_SIZE - 2] {
+                    (cell[i]' = cell[i + 1])
+                } & (cell[BUFFER_SIZE - 1]' = 0);
+        }
+    }
+}
+
+
+const WORK_SIZE_DIST = [0.9, 0.1];
+
+type Producer {
+    work : [1 .. MAX_WORK_SIZE] init 1;
+
+    forall w : [1 .. MAX_WORK_SIZE] {
+        [enqueue[w]] w = work -> forall i : [1 .. MAX_WORK_SIZE] { WORK_SIZE_DIST[i - 1] : (work' = i) };
+    }
+}
+
+
+system {
+    consumer : Consumer;
+    buffer : Buffer;
+    producer : Producer;
+}
