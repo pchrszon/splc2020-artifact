@@ -208,3 +208,44 @@ particular, the following variants are analyzed:
 The analysis for all 4 variants is started using the `throughput.sh` script (no
 arguments). The results as produced by PRISM are written to the `logs`
 directory.
+
+
+## Creating new experiments
+
+The scripts provided in this repository may serve as a basis for creating new
+experiments. Generally, they automate the following three-step process:
+
+1. The model is instantiated and translated using the `rbsc` tool. This results
+   in a single PRISM model per instance.
+2. The generated PRISM models are analyzed using the PRISM model checker. The
+   output of PRISM is captured in log-files. These log-files contain the
+   analysis results, various model statistics (such as number of reachable
+   states and the size of the internal representation), and the duration of the
+   analysis steps.
+3. The data which is relevant for the experiment is extracted from the log-files
+   and compiled into a single CSV file.
+
+In order to create a new experiment, the following steps are necessary. First,
+the `rbl`-model has to be prepared to enable an automated instantiation. For
+that, relevant system parameters have to be identified, e.g., the buffer size in
+the producer-consumer example (see `examples/producer-consumer.rbl`). Such
+system parameters should be defined as constants within the model. In the
+example, the buffer size in the producer-consumer system corresponds to the
+`BUFFER_SIZE` constant. Then, all parameters that should be varied in the
+experiment must be left uninitialized, e.g., the first line of the
+producer-consumer model must be changed to
+
+    const BUFFER_SIZE;
+
+With that, the concrete value of the system parameter can be specified on the
+command line, e.g.,
+
+    rbsc producer-consumer.rbl -c 'BUFFER_SIZE=2' -o producer-consumer.prism
+
+The second step is then to create scripts for instantiating the model and
+analyzing the generated instances. As an optional final step, the extraction of
+results from the PRISM log files can be automated.
+
+The `production-cell/completion_probs.sh` script combines all three steps
+(translation, analysis, and extraction of results) in a small, self-contained
+script and thus may serve as a starting point for new experiments.
