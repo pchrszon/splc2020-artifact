@@ -1,0 +1,16 @@
+include "../elevator.rbl"
+
+system {
+    executive : Executive; executive boundto control;
+    ttf : TTF; ttf boundto executive;
+}
+
+coordinator {
+    [open] [executive] true -> true;
+    [close] [executive] true -> true;
+    [open] [!executive & ttf] ttf.tt_full -> true;
+    [up] [!executive & ttf] ttf.tt_full -> true;
+    [down] [!executive & ttf] ttf.tt_full -> true;
+    [up] [executive & !ttf] !ttf.tt_full -> true;
+    [down] [executive & !ttf] !ttf.tt_full -> true;
+}

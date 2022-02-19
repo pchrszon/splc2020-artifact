@@ -1,0 +1,3 @@
+// (12) Lift will not remain indefinitely at any non-parking floor
+A [ G (!E [ G (cabin_position = 1 & !cabin_door_open) ] ) ];
+// A [ G (!E [ G (cabin_position = 2 & !cabin_door_open) ] ) ];

@@ -1,0 +1,5 @@
+// (10) Doors will not close while lift is overloaded
+!E [ F (overload_overloaded & !cabin_door_open) ];
+
+// (11) Lift will not move while it is overloaded
+A [ G (cabin_position = 0 & overload_overloaded => A [ cabin_position = 0 W !overload_overloaded ] ) ];

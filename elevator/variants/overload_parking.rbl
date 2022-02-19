@@ -1,0 +1,11 @@
+include "../elevator.rbl"
+
+system {
+    overload : Overload; overload boundto control;
+    parking : Parking; parking boundto overload;
+}
+
+coordinator {
+    [] [overload & parking] true -> true;
+    [idle] [overload & !parking] true -> true;
+}

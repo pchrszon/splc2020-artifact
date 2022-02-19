@@ -1,0 +1,7 @@
+// (8) The lift will not arrive empty unless there was a landing request
+A [ G ((cabin_position = 0 & !cabin_door_open & empty_empty & A [ X (cabin_door_open) ]) => landing_button_0_pushed) ];
+
+// (9) Guaranteed service for cabin calls as long as cabin is not empty
+A [ G (cabin_button_0_pushed & !empty_empty => A [ F ((cabin_position = 0 & cabin_door_open) | empty_empty) ] ) ];
+// A [ G (cabin_button_1_pushed & !empty_empty => A [ F ((cabin_position = 1 & cabin_door_open) | empty_empty) ] ) ];
+// A [ G (cabin_button_2_pushed & !empty_empty => A [ F ((cabin_position = 2 & cabin_door_open) | empty_empty) ] ) ];

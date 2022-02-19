@@ -1,0 +1,47 @@
+role type TTF(Control, Empty, Parking, Executive) {
+    tt_full : bool init false;
+    direction : [DOWN .. UP] init UP;
+
+    [open] !tt_full | !has_any_cabin_request -> (tt_full' = true) & (direction' = control.direction);
+    [open] !tt_full | !has_any_cabin_request -> (tt_full' = false);
+
+    [close] true -> true;
+
+    [up] !tt_full | !has_any_cabin_request -> true;
+    [down] !tt_full | !has_any_cabin_request -> true;
+
+
+    forall f : [GROUND_FLOOR .. TOP_FLOOR] {
+        [open] tt_full & cabin.position = f & !cabin.door_open & has_cabin_request(f) -> true;
+
+        if f < TOP_FLOOR {
+            [override up] tt_full &
+                cabin.position = f & !cabin.door_open & !has_cabin_request(f) &
+                has_cabin_request_above(f) & direction = UP
+                -> true;
+
+            [] cabin.position = f & direction = DOWN & !has_cabin_request_below(f) & has_cabin_request_above(f) -> (direction' = UP);
+        }
+
+        if f > GROUND_FLOOR {
+            [override down] tt_full &
+                cabin.position = f & !cabin.door_open & !has_cabin_request(f) &
+                has_cabin_request_below(f) & direction = DOWN
+                -> true;
+
+            [] cabin.position = f & direction = UP & !has_cabin_request_above(f) & has_cabin_request_below(f) -> (direction' = DOWN);
+        }
+    }
+}
+
+
+function has_cabin_request(f : int) : bool = cabin_button[f].pushed;
+
+function has_any_cabin_request() : bool =
+    exists f : [GROUND_FLOOR .. TOP_FLOOR]. has_cabin_request(f);
+
+function has_cabin_request_above(f : int) : bool =
+    exists i : [GROUND_FLOOR .. TOP_FLOOR]. i > f & has_cabin_request(i);
+
+function has_cabin_request_below(f : int) : bool =
+    exists i : [GROUND_FLOOR .. TOP_FLOOR]. i < f & has_cabin_request(i);

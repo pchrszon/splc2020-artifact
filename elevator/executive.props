@@ -1,0 +1,2 @@
+// (14) The lift will answer calls from the executive floor
+A [ G (landing_button_2_pushed => A [ F (cabin_position = 2) ]) ];

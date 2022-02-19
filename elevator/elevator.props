@@ -1,0 +1,33 @@
+// (0) No deadlock
+!E [ F "deadlock" ];
+
+// (1) Guaranteed service for landings
+A [ G (landing_button_0_pushed => A [ F (cabin_position = 0 & cabin_door_open) ] ) ];
+// A [ G (landing_button_1_pushed => A [ F (cabin_position = 1 & cabin_door_open) ] ) ];
+// A [ G (landing_button_2_pushed => A [ F (cabin_position = 2 & cabin_door_open) ] ) ];
+
+// (2) Guaranteed service for cabin
+A [ G (cabin_button_0_pushed => A [ F (cabin_position = 0 & cabin_door_open) ] ) ];
+// A [ G (cabin_button_1_pushed => A [ F (cabin_position = 1 & cabin_door_open) ] ) ];
+// A [ G (cabin_button_2_pushed => A [ F (cabin_position = 2 & cabin_door_open) ] ) ];
+
+// (3) Lift will not change direction while there are still calls in this direction
+A [ G ((cabin_position = 0 & cabin_button_1_pushed & control_direction = 1) => A [ (control_direction = 1) U (cabin_position = 1) ] ) ];
+// A [ G ((cabin_position = 0 & cabin_button_2_pushed & control_direction = 1) => A [ (control_direction = 1) U (cabin_position = 2) ] ) ];
+// A [ G ((cabin_position = 2 & cabin_button_0_pushed & control_direction = 0) => A [ (control_direction = 0) U (cabin_position = 0) ] ) ];
+// A [ G ((cabin_position = 2 & cabin_button_1_pushed & control_direction = 0) => A [ (control_direction = 0) U (cabin_position = 1) ] ) ];
+
+// (4) If the door closes, it may remain closed
+!A [ G (!cabin_door_open => A [ F (cabin_door_open) ]) ];
+
+// (5) The lift remain idle with its doors closed
+// E [ F (cabin_position = 0 & !cabin_door_open & "idle") ];
+A [ G (cabin_position = 0 & !cabin_door_open & "idle" => E [ G (cabin_position = 0 & !cabin_door_open) ]) ];
+// A [ G (cabin_position = 1 & !cabin_door_open & "idle" => E [ G (cabin_position = 1 & !cabin_door_open) ]) ];
+// A [ G (cabin_position = 2 & !cabin_door_open & "idle" => E [ G (cabin_position = 2 & !cabin_door_open) ]) ];
+
+// (6) The lift may stop at floor 1 while travelling upwards
+!A [ G (cabin_position = 1 & !cabin_button_1_pushed & control_direction = 1 => !cabin_door_open) ];
+
+// (7) The lift may stop at floor 1 while travelling downwards
+!A [ G (cabin_position = 1 & !cabin_button_1_pushed & control_direction = 0 => !cabin_door_open) ];

@@ -1,0 +1,14 @@
+role type Executive(Control, Empty, Parking, TTF) {
+    [open]  !has_executive_request -> true;
+    [close] !has_executive_request -> true;
+    [up]    !has_executive_request -> true;
+    [down]  !has_executive_request -> true;
+
+    [open] has_executive_request & cabin.position = EXECUTIVE_FLOOR -> true;
+    [override close] has_executive_request & cabin.position != EXECUTIVE_FLOOR & cabin.door_open -> true;
+    [override up] has_executive_request & cabin.position < EXECUTIVE_FLOOR & !cabin.door_open -> true;
+    [override down] has_executive_request & cabin.position > EXECUTIVE_FLOOR & !cabin.door_open -> true;
+}
+
+
+function has_executive_request() : bool = landing_button[EXECUTIVE_FLOOR].pushed;

@@ -1,0 +1,13 @@
+role type Overload(Control, Parking, Executive) {
+    overloaded : bool init false;
+
+    [close] !overloaded -> true;
+    [push] overloaded & cabin.door_open -> (overloaded' = false);
+    [push] true -> true;
+
+    [open] true -> (overloaded' = true);
+    [open] true -> true;
+
+    [override idle] overloaded -> true;
+    [idle] !overloaded -> true;
+}

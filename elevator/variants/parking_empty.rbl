@@ -1,0 +1,11 @@
+include "../elevator.rbl"
+
+system {
+    parking : Parking; parking boundto control;
+    empty : Empty; empty boundto parking;
+}
+
+coordinator {
+    [] [empty & parking] true -> true;
+    [open] [!empty & parking] true -> true;
+}

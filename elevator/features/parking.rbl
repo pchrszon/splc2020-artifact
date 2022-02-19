@@ -1,0 +1,14 @@
+role type Parking(Control, Empty, Overload, TTF, Executive) {
+    [override up]   lift_is_idle & cabin.position < PARKING_FLOOR & !cabin.door_open -> true;
+    [override down] lift_is_idle & cabin.position > PARKING_FLOOR & !cabin.door_open -> true;
+    [override open] lift_is_idle & cabin.position = PARKING_FLOOR & !cabin.door_open -> true;
+
+    [up]   !lift_is_idle -> true;
+    [down] !lift_is_idle -> true;
+    [open] !lift_is_idle -> true;
+    [close]
+        (cabin.position != PARKING_FLOOR & !exists f : [GROUND_FLOOR .. TOP_FLOOR].has_request(f)) |
+        exists f : [GROUND_FLOOR .. TOP_FLOOR]. has_request(f) -> true;
+
+    [idle] lift_is_idle & cabin.position = PARKING_FLOOR & cabin.door_open -> true;
+}

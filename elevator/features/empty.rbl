@@ -1,0 +1,13 @@
+role type Empty(Control, Parking, TTF, Executive) {
+    empty : bool init true;
+
+    [open] true -> (empty' = true);
+    [open] true -> (empty' = false);
+
+    [override reset] self.can_reset -> true;
+    [push] !self.can_reset -> true;
+}
+
+
+function Empty.can_reset() : bool =
+    self.empty & exists i : [GROUND_FLOOR .. TOP_FLOOR]. cabin_button[i].pushed;

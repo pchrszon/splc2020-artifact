@@ -1,0 +1,14 @@
+include "../elevator.rbl"
+
+system {
+    executive : Executive; executive boundto control;
+    empty : Empty; empty boundto executive;
+}
+
+coordinator {
+    [] [empty & executive] true -> true;
+    [up] [!empty & executive] true -> true;
+    [down] [!empty & executive] true -> true;
+    [open] [!empty & executive] true -> true;
+    [close] [!empty & executive] true -> true;
+}

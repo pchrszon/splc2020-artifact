@@ -1,0 +1,128 @@
+const NUM_FLOORS = 3;
+const PARKING_FLOOR = 0;
+const EXECUTIVE_FLOOR = TOP_FLOOR;
+
+
+include "features/empty.rbl"
+include "features/overload.rbl"
+include "features/parking.rbl"
+include "features/ttf.rbl"
+include "features/executive.rbl"
+
+
+const GROUND_FLOOR = 0;
+const TOP_FLOOR = NUM_FLOORS - 1;
+
+const LIFT_ACTIONS = [action up, action down, action open, action close, action idle];
+
+
+type PhaseControl {
+    phase : enum { PUSH, MOVE } init PUSH;
+
+    [push] phase = PUSH -> (phase' = MOVE);
+    [reset] phase = PUSH -> (phase' = MOVE);
+
+    forall i : [0 .. length(LIFT_ACTIONS) - 1] {
+        [LIFT_ACTIONS[i]] phase = MOVE -> (phase' = PUSH);
+    }
+}
+
+
+type LandingButton {
+    pushed : bool init false;
+
+    [push] true -> true;
+    [push] !pushed & cabin.position != index -> (pushed' = true);
+
+    [open] cabin.position = index -> (pushed' = false);
+    [open] cabin.position != index -> true;
+}
+
+type CabinButton {
+    pushed : bool init false;
+
+    [push] true -> true;
+    [push] !pushed & cabin.position != index -> (pushed' = true);
+
+    [open] cabin.position = index -> (pushed' = false);
+    [open] cabin.position != index -> true;
+
+    [reset] true -> (pushed' = false);
+}
+
+
+type Cabin {
+    position : [GROUND_FLOOR .. TOP_FLOOR] init GROUND_FLOOR;
+    door_open : bool init false;
+
+    [up]   true -> (position' = min(position + 1, TOP_FLOOR));
+    [down] true -> (position' = max(position - 1, GROUND_FLOOR));
+
+    [open]  true -> (door_open' = true);
+    [close] true -> (door_open' = false);
+}
+
+
+type Control {
+    direction : enum { DOWN, UP } init UP;
+
+    forall f : [GROUND_FLOOR .. TOP_FLOOR] {
+        // open cabin doors if we reached a floor with a button pushed
+        [open] cabin.position = f & has_request(f) -> true;
+
+
+        // close cabin door if no request is pending on the current floor
+        [close] cabin.position = f & cabin.door_open & !has_request(f) -> true;
+
+        if f < TOP_FLOOR {
+            // move up if there are pending requests above and we are moving upwards
+            [up] cabin.position = f & !cabin.door_open & !has_request(f) &
+                has_request_above(f) & direction = UP
+                -> (direction' = if f = TOP_FLOOR - 1 then DOWN else UP);
+
+            // reverse direction if there are no more pending requests above
+            [] pc.phase = MOVE & cabin.position = f & direction = DOWN & !has_request_below(f) & has_request_above(f) -> (direction' = UP);
+        }
+
+        if f > GROUND_FLOOR {
+            // move down if there are pending requests below and we are moving downwards
+            [down] cabin.position = f & !cabin.door_open & !has_request(f) &
+                has_request_below(f) & direction = DOWN
+                -> (direction' = if f = GROUND_FLOOR - 1 then UP else DOWN);
+
+            // reverse direction if there are no more pending requests below
+            [] pc.phase = MOVE & cabin.position = f & direction = UP & !has_request_above(f) & has_request_below(f) -> (direction' = DOWN);
+        }
+    }
+
+    [idle] lift_is_idle -> true;
+    [reset] false -> true;
+}
+
+
+system {
+    pc : PhaseControl;
+
+    landing_button[NUM_FLOORS] : LandingButton;
+    cabin_button[NUM_FLOORS] : CabinButton;
+
+    cabin : Cabin;
+
+    control : Control;
+}
+
+
+function has_request(f : int) : bool =
+    landing_button[f].pushed | cabin_button[f].pushed;
+
+function has_request_above(f : int) : bool =
+    exists i : [GROUND_FLOOR .. TOP_FLOOR]. i > f & has_request(i);
+
+function has_request_below(f : int) : bool =
+    exists i : [GROUND_FLOOR .. TOP_FLOOR]. i < f & has_request(i);
+
+function lift_is_idle() : bool =
+    !exists i : [GROUND_FLOOR .. TOP_FLOOR]. has_request(i);
+
+
+label "idle" = lift_is_idle;

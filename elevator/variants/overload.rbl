@@ -1,0 +1,11 @@
+include "../elevator.rbl"
+
+
+system {
+    overload : Overload; overload boundto control;
+}
+
+
+coordinator {
+    [] [overload] true -> true;
+}

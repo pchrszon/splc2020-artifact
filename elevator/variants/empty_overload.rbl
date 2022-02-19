@@ -1,0 +1,10 @@
+include "../elevator.rbl"
+
+system {
+    empty : Empty; empty boundto control;
+    overload : Overload; overload boundto control;
+}
+
+coordinator {
+    [] [empty & overload] true -> true;
+}

@@ -1,0 +1,15 @@
+include "../elevator.rbl"
+
+system {
+    ttf : TTF; ttf boundto control;
+    parking : Parking; parking boundto ttf;
+}
+
+coordinator {
+    [] [parking & ttf] true -> true;
+    [open] [parking & !ttf] true -> true;
+    [up] [parking & !ttf] true -> true;
+    [down] [parking & !ttf] true -> true;
+    // [up] [parking & !ttf] true -> true;
+    // [down] [parking & !ttf] true -> true;
+}

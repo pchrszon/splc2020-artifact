@@ -1,0 +1,14 @@
+include "../elevator.rbl"
+
+
+system {
+    empty : Empty; empty boundto control;
+    ttf : TTF; ttf boundto empty;
+}
+
+
+coordinator {
+    [] [empty & ttf] true -> true;
+    [up] [!empty & ttf] true -> true;
+    [down] [!empty & ttf] true -> true;
+}

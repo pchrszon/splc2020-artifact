@@ -1,0 +1,4 @@
+// (13) If lift is two thirds full, cabin requests have priority
+A [ G (ttf_tt_full & cabin_button_0_pushed & !cabin_button_1_pushed & !cabin_door_open => A [ !(cabin_position = 1 & cabin_door_open) U ((cabin_position = 0 & cabin_door_open) | !ttf_tt_full | cabin_button_1_pushed) ] ) ];
+
+// A [ G (ttf_tt_full & cabin_button_0_pushed & !cabin_button_2_pushed & !cabin_door_open => A [ !(cabin_position = 2 & cabin_door_open) U ((cabin_position = 0 & cabin_door_open) | !ttf_tt_full | cabin_button_2_pushed) ] ) ];

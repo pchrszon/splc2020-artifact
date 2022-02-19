@@ -1,0 +1,11 @@
+include "../elevator.rbl"
+
+system {
+    executive : Executive; executive boundto control;
+    parking : Parking; parking boundto executive;
+}
+
+coordinator {
+    [] [executive & !parking] has_executive_request -> true;
+    [] [!executive & parking] !has_executive_request -> true;
+}
